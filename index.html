@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Green Buck</title>
+<style>
+body{background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:24px}
+.container{max-width:700px;margin:auto}
+.logo{color:#63ff78;font-size:24px;font-weight:700;margin-bottom:24px}
+.card{background:#070707;border:1px solid #262626;border-radius:24px;padding:18px;margin:12px 0}
+input,select{background:#101010;color:#fff;border:1px solid #2b2b2b;border-radius:14px;padding:14px;width:100%;box-sizing:border-box}
+button{background:#0f3b19;color:#7dff8f;border:1px solid #1f7d34;border-radius:14px;padding:12px 20px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1}
+.alloc{display:flex;justify-content:space-between;align-items:center}
+.small{opacity:.75}
+.big{font-size:54px;font-weight:700;color:#63ff78}
+.hidden{display:none}
+.title-row{display:flex;gap:12px;align-items:baseline}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="logo">GREEN BUCK</div>
+
+<div class="card">
+<h2>Income</h2>
+<input id="income" type="number" value="200">
+</div>
+
+<div class="card">
+<h2>Add Allocation</h2>
+
+<div class="row">
+<select id="category" onchange="toggleCustom()">
+<option>Food / pw</option>
+<option>Transport</option>
+<option>Saving</option>
+<option>Casual</option>
+<option>Custom</option>
+</select>
+
+<select id="cost">
+<option>5</option><option>10</option><option>15</option><option>20</option>
+<option>25</option><option>30</option><option>35</option><option>40</option>
+<option>45</option><option>50</option>
+</select>
+</div>
+
+<div id="customWrap" class="hidden" style="margin-top:10px;">
+<input id="customName" placeholder="Custom name">
+</div>
+
+<div style="margin-top:10px;">
+<button onclick="addItem()">Add</button>
+</div>
+</div>
+
+<div id="allocations"></div>
+
+<div class="card">
+<div class="small">REMAINING</div>
+<div id="remaining" class="big"></div>
+</div>
+</div>
+
+<script>
+let items=[];
+
+function toggleCustom(){
+ document.getElementById('customWrap').className =
+ document.getElementById('category').value==='Custom' ? '' : 'hidden';
+}
+
+function addItem(){
+ const cat=document.getElementById('category').value;
+ const cost=Number(document.getElementById('cost').value);
+
+ let label=cat;
+ let amount=cost;
+ let type='normal';
+
+ if(cat==='Food / pw'){
+   amount=cost*4;
+   label=`Food (£${cost}/pw)`;
+   type='food';
+ } else if(cat==='Custom'){
+   label=document.getElementById('customName').value.trim() || 'Custom';
+   type='custom';
+ }
+
+ items.push({label,amount,type});
+ render();
+}
+
+function removeItem(i){
+ items.splice(i,1);
+ render();
+}
+
+function render(){
+ const income=Number(document.getElementById('income').value)||0;
+ let remaining=Math.max(0,income-10);
+
+ let html='';
+
+ items.forEach((item,i)=>{
+   remaining-=item.amount;
+
+   let content='';
+
+   if(item.type==='food'){
+      content=`<strong>${item.label}</strong><br>£${item.amount} <span class="small">• Remaining £${remaining}</span>`;
+   } else {
+      content=`<div class="title-row"><strong>${item.label}</strong><strong>£${item.amount}</strong></div><span class="small">Remaining £${remaining}</span>`;
+   }
+
+   html += `
+   <div class="card alloc">
+     <div>${content}</div>
+     <button onclick="removeItem(${i})">Delete</button>
+   </div>`;
+ });
+
+ document.getElementById('allocations').innerHTML=html;
+ document.getElementById('remaining').innerHTML='£'+remaining;
+}
+
+document.getElementById('income').addEventListener('input',render);
+toggleCustom();
+render();
+</script>
+</body>
+</html>
